@@ -1,0 +1,4 @@
+v0.2.1 / 2023-07-24
+
+  * Implement menu using dialog program
+  + Implement "save" feature that saves a directory to a save file
