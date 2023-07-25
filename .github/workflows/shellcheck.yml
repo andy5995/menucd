@@ -1,0 +1,22 @@
+name: "run shellcheck"
+
+on:
+  push:
+    branches:
+    - trunk
+    paths:
+    - '**.sh'
+  pull_request:
+    branches:
+    - trunk
+    paths:
+    - '**.sh'
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
