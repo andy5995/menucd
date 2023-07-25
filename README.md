@@ -5,6 +5,11 @@ Script that presents a menu of directories at the command line
 
 * [dialog](https://invisible-island.net/dialog/dialog.html)
 
+Linux, unix, BSD, MacOS
+
+This script probably won't work from the Windows command line unless you're
+using WSL or some other modified command line environment.
+
 ## Usage
 
 Save the script to a file, and then add this function to your environment by
@@ -23,4 +28,9 @@ function menucd () {
 }
 ```
 
+Reload `~/.profile` (or whichever rc file you edited):
+
+    source ~/.profile
+
+Then run `menucd`. If you run the script (`menucd.sh`) by itself, it won't work.
 
