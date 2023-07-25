@@ -1,3 +1,5 @@
+[![run shellcheck](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml)
+
 # menucd
 Script that presents a menu of directories at the command line
 
