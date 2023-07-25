@@ -1,5 +1,4 @@
 #!/usr/bin/env -S bash --posix
-# https://gist.github.com/andy5995/f67f3a08b79b527d9c13ae39ec0e846e
 #
 #~ This is free and unencumbered software released into the public domain.
 
@@ -26,7 +25,15 @@
 
 #~ For more information, please refer to <https://unlicense.org>
 
-VERSION="0.1.0"
+VERSION="0.2.1"
+SAVE_FILE="${HOME}/.menucd-save"
+
+if [ -z "$(command -v dialog)" ]; then
+  echo "The dialog package is required"
+  echo "(See https://invisible-island.net/dialog/dialog.html)"
+  exit 1
+fi
+touch "${SAVE_FILE}"
 
 while :; do
   curdir=$(find . -maxdepth 1 -type d -printf '%fx0x0x0x0\n' | sort)
@@ -35,24 +42,30 @@ while :; do
   curdir=$(echo "${curdir}" | sed 's/^\./00000000/g')
   curdir=$(echo "${curdir}" | sort)
   curdir=$(echo "${curdir}" | sed 's/00000000/\./g')
-
   i=0
   dirs=("..")
-  echo "$i) ${dirs[$i]}"
-  for dir in ${curdir}; do
+  options=($i "$dirs")
+
+  for dir in ${curdir} `cat ${SAVE_FILE}`; do
     let i=i+1
     dir=$(echo "${dir}" | sed 's/%20/ /g')
     dirs+=("${dir}")
-    echo "$i) $dir"
+    options+=($i "$dir")
   done
 
-  echo ""
-  echo "PWD: ${PWD}"
-  echo "Enter number (or (q)uit)? "
-  read input
-  if  [ "$input" = "q" ]; then
+  cmd=(dialog --extra-button --extra-label "Save" --keep-tite --cancel-label "Quit" --menu $(pwd) -1 -1 16)
+  choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+  ret=$?
+
+  if  [ $ret -eq 255 ]; then
+    exit 0
+  elif [ $ret -eq 1 ]; then
     echo "$PWD" > /tmp/menucd.cd.exit
     exit 0
+  elif [ $ret -eq 3 ]; then
+    echo "${PWD}" >> "${SAVE_FILE}"
+  else
+    cd ${options[(($choices+1)*2)-1]}
   fi
-  cd "${dirs[$input]}"
 done
+exit 0
