@@ -1,5 +1,6 @@
 v0.2.2 / 2023-07-25
 
+  + output version; exit if '-v' is given as an argument
   - remove '.' from directory listings
   + add missing information to README
 

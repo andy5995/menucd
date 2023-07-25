@@ -28,6 +28,11 @@
 VERSION="0.2.2"
 SAVE_FILE="${HOME}/.menucd-save"
 
+echo "menucd $VERSION"
+if [ "$1" = "-v" ]; then
+  exit 0
+fi
+
 if [ -z "$(command -v dialog)" ]; then
   echo "The dialog package is required"
   echo "(See https://invisible-island.net/dialog/dialog.html)"
@@ -37,26 +42,30 @@ touch "${SAVE_FILE}"
 
 while :; do
   curdir=$(find . -maxdepth 1 -type d -printf '%fx0x0x0x0\n' | sort)
+  # why doesn't this work?
+  # echo "${curdir// /%20}"
+  # https://www.shellcheck.net/wiki/SC2001
   curdir=$(echo "$curdir" | sed 's/ /%20/g')
+
   curdir=$(echo "$curdir" | sed 's/x0x0x0x0/ /g')
   curdir=$(echo "${curdir}" | sed 's/^\./00000000/g')
   curdir=$(echo "${curdir}" | sort)
   curdir=$(echo "${curdir}" | sed 's/00000000/\./g')
   i=0
   dirs=("..")
-  options=($i "$dirs")
+  options=("$i" "${dirs[@]}")
 
-  for dir in ${curdir} `cat ${SAVE_FILE}`; do
+  for dir in ${curdir} $(cat "${SAVE_FILE}"); do
     if [ "$dir" = "." ]; then
       continue
     fi
-    let i=i+1
+    ((i=i+1))
     dir=$(echo "${dir}" | sed 's/%20/ /g')
     dirs+=("${dir}")
-    options+=($i "$dir")
+    options+=("$i" "$dir")
   done
 
-  cmd=(dialog --extra-button --extra-label "Save" --keep-tite --cancel-label "Quit" --menu $(pwd) -1 -1 16)
+  cmd=(dialog --extra-button --extra-label "Save" --keep-tite --cancel-label "Quit" --menu "$(pwd)" -1 -1 16)
   choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
   ret=$?
 
@@ -68,7 +77,7 @@ while :; do
   elif [ $ret -eq 3 ]; then
     echo "${PWD}" >> "${SAVE_FILE}"
   else
-    cd ${options[(($choices+1)*2)-1]}
+    cd "${options[(($choices+1)*2)-1]}" || exit $?
   fi
 done
 exit 0
