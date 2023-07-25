@@ -20,13 +20,14 @@ below to match the path to where you saved the script above):
 
 ```sh
 function menucd () {
-        $HOME/scripts/menucd.sh
-        if [ -r /tmp/menucd.cd.exit ]; then
-                cd "`cat /tmp/menucd.cd.exit`"
-                rm /tmp/menucd.cd.exit
-        else
-                echo Fail
-        fi
+  $HOME/scripts/menucd.sh $@
+  ret=$?
+  if [ -r /tmp/menucd.cd.exit ]; then
+          cd "`cat /tmp/menucd.cd.exit`"
+          rm /tmp/menucd.cd.exit
+  elif [ $ret != 0 ]; then
+          echo Fail
+  fi
 }
 ```
 
