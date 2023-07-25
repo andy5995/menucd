@@ -25,7 +25,7 @@
 
 #~ For more information, please refer to <https://unlicense.org>
 
-VERSION="0.2.1"
+VERSION="0.2.2"
 SAVE_FILE="${HOME}/.menucd-save"
 
 if [ -z "$(command -v dialog)" ]; then
@@ -47,6 +47,9 @@ while :; do
   options=($i "$dirs")
 
   for dir in ${curdir} `cat ${SAVE_FILE}`; do
+    if [ "$dir" = "." ]; then
+      continue
+    fi
     let i=i+1
     dir=$(echo "${dir}" | sed 's/%20/ /g')
     dirs+=("${dir}")
