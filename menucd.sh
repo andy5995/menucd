@@ -77,7 +77,7 @@ while :; do
   elif [ $ret -eq 3 ]; then
     echo "${PWD}" >> "${SAVE_FILE}"
   else
-    cd "${options[(($choices+1)*2)-1]}" || exit $?
+    cd "${options[(($choices)*2)+1]}" || exit $?
   fi
 done
 exit 0
