@@ -1,3 +1,7 @@
+v0.2.3
+
+  * use more specific text in labels
+
 v0.2.2 / 2023-07-25
 
   + output version; exit if '-v' is given as an argument

@@ -25,7 +25,7 @@
 
 #~ For more information, please refer to <https://unlicense.org>
 
-VERSION="0.2.2"
+VERSION="0.2.3"
 SAVE_FILE="${HOME}/.menucd-save"
 
 echo "menucd $VERSION"
@@ -65,7 +65,12 @@ while :; do
     options+=("$i" "$dir")
   done
 
-  cmd=(dialog --extra-button --extra-label "Save" --keep-tite --cancel-label "Quit" --menu "$(pwd)" -1 -1 16)
+  cmd=(dialog \
+    --ok-label "CD" \
+    --extra-button --extra-label "Save" \
+    --keep-tite \
+    --cancel-label "Quit to current directory" \
+    --menu "Current directory:\n$(pwd)" -1 -1 16)
   choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
   ret=$?
 
