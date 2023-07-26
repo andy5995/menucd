@@ -1,5 +1,6 @@
 v0.2.3
 
+  * hide '..' when in '/'
   * move saved list to the top and use separators
   * use more specific text in labels
 

@@ -54,16 +54,21 @@ while :; do
   curdir=$(echo "${curdir}" | sort)
   curdir=$(echo "${curdir}" | sed 's/00000000/\./g')
   i=0
-  dirs=("..")
-  options=("$i" "${dirs[@]}")
+
+  if [ "$PWD" != "/" ]; then
+    dirs=("..")
+    options=("$i" "${dirs[@]}")
+  else
+    dirs=("")
+    options=("" "")
+  fi
 
   for dir in "$SAVE_SEP_HEAD" $(cat "${SAVE_FILE}") "$SAVE_SEP_FOOT" ${curdir}; do
-    if [ "$dir" = "." ]; then
+    if [ "$dir" = "." ] || [ -z "$dir" ]; then
       continue
     fi
     ((i=i+1))
     dir=$(echo "${dir}" | sed 's/%20/ /g')
-    dirs+=("${dir}")
     options+=("$i" "$dir")
   done
 
