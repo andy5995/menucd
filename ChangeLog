@@ -1,4 +1,4 @@
-v0.2.3
+v0.2.3 / 2023-07-25
 
   * add more help related to saving the PWD
   * hide '..' when in '/'
