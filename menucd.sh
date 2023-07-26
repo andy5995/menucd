@@ -27,6 +27,8 @@
 
 VERSION="0.2.3"
 SAVE_FILE="${HOME}/.menucd-save"
+SAVE_SEP_HEAD="----- saved ----"
+SAVE_SEP_FOOT="----------------"
 
 echo "menucd $VERSION"
 if [ "$1" = "-v" ]; then
@@ -55,7 +57,7 @@ while :; do
   dirs=("..")
   options=("$i" "${dirs[@]}")
 
-  for dir in ${curdir} $(cat "${SAVE_FILE}"); do
+  for dir in "$SAVE_SEP_HEAD" $(cat "${SAVE_FILE}") "$SAVE_SEP_FOOT" ${curdir}; do
     if [ "$dir" = "." ]; then
       continue
     fi
@@ -65,24 +67,32 @@ while :; do
     options+=("$i" "$dir")
   done
 
-  cmd=(dialog \
-    --ok-label "CD" \
-    --extra-button --extra-label "Save" \
-    --keep-tite \
-    --cancel-label "Quit to current directory" \
-    --menu "Current directory:\n$(pwd)" -1 -1 16)
-  choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
-  ret=$?
+  while :; do
+    cmd=(dialog \
+      --ok-label "CD" \
+      --extra-button --extra-label "Save" \
+      --keep-tite \
+      --cancel-label "Quit to current directory" \
+      --menu "Current directory:\n$(pwd)" -1 -1 16)
+    choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+    ret=$?
+    if [ -n "$choices" ]; then
+      selected="${options[$choices*2+1]}"
+    fi
+    if [ "$selected" != "$SAVE_SEP_HEAD" ] && [ "$selected" != "$SAVE_SEP_FOOT" ]; then
+      break
+    fi
+  done
 
-  if  [ $ret -eq 255 ]; then
+  if  [ "$ret" -eq 255 ]; then
     exit 0
-  elif [ $ret -eq 1 ]; then
+  elif [ "$ret" -eq 1 ]; then
     echo "$PWD" > /tmp/menucd.cd.exit
     exit 0
-  elif [ $ret -eq 3 ]; then
+  elif [ "$ret" -eq 3 ]; then
     echo "${PWD}" >> "${SAVE_FILE}"
   else
-    cd "${options[(($choices)*2)+1]}" || exit $?
+    cd "$selected" || exit $?
   fi
 done
 exit 0
