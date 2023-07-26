@@ -1,7 +1,7 @@
 [![run shellcheck](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml)
 
 # menucd
-Script that presents a menu of directories at the command line
+Directory browser and changer for the command line
 
 ## Requirements
 
@@ -14,9 +14,9 @@ using WSL or some other modified command line environment.
 
 ## Usage
 
-Save the script to a file, and then add this function to your environment by
-editing your ~/.profile, ~/.bashrc, ~/.zshrc, etc (edit the path to the script
-below to match the path to where you saved the script above):
+Add this function to your environment by editing your ~/.profile, ~/.bashrc,
+~/.zshrc, etc (change the path in the code below to match the path to where
+the `menucd.sh` script is located):
 
 ```sh
 function menucd () {
