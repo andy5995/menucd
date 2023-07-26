@@ -41,7 +41,11 @@ if [ -z "$(command -v dialog)" ]; then
   echo "(See https://invisible-island.net/dialog/dialog.html)"
   exit 1
 fi
-touch "${SAVE_FILE}"
+
+if [ ! -w "${SAVE_FILE}" ]; then
+  echo "Creating ${SAVE_FILE}"
+  touch "${SAVE_FILE}" || exit 1
+fi
 
 while :; do
   curdir=$(find . -maxdepth 1 -type d -printf '%fx0x0x0x0\n' | sort)
