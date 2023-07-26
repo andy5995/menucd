@@ -31,6 +31,7 @@ SAVE_SEP_HEAD="----- saved ----"
 SAVE_SEP_FOOT="----------------"
 
 echo "menucd $VERSION"
+echo "save-file location: ${HOME}/.menucd-save"
 if [ "$1" = "-v" ]; then
   exit 0
 fi
@@ -75,10 +76,10 @@ while :; do
   while :; do
     cmd=(dialog \
       --ok-label "CD" \
-      --extra-button --extra-label "Save" \
+      --extra-button --extra-label "Save PWD" \
       --keep-tite \
-      --cancel-label "Quit to current directory" \
-      --menu "Current directory:\n$(pwd)" -1 -1 16)
+      --cancel-label "Quit to PWD" \
+      --menu "PWD:\n$PWD" -1 -1 16)
     choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     ret=$?
     if [ -n "$choices" ]; then
