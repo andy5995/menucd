@@ -48,32 +48,21 @@ if [ ! -w "${SAVE_FILE}" ]; then
 fi
 
 while :; do
-  curdir=$(find . -maxdepth 1 -type d -printf '%fx0x0x0x0\n' | sort)
-  # why doesn't this work?
-  # echo "${curdir// /%20}"
-  # https://www.shellcheck.net/wiki/SC2001
-  curdir=$(echo "$curdir" | sed 's/ /%20/g')
-
-  curdir=$(echo "$curdir" | sed 's/x0x0x0x0/ /g')
-  curdir=$(echo "${curdir}" | sed 's/^\./00000000/g')
-  curdir=$(echo "${curdir}" | sort)
-  curdir=$(echo "${curdir}" | sed 's/00000000/\./g')
+  mapfile -t curdir < <(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | LC_ALL=C sort)
+  mapfile -t saved < "${SAVE_FILE}"
   i=0
 
   if [ "$PWD" != "/" ]; then
-    dirs=("..")
-    options=("$i" "${dirs[@]}")
+    options=("$i" "..")
   else
-    dirs=("")
     options=("" "")
   fi
 
-  for dir in "$SAVE_SEP_HEAD" $(cat "${SAVE_FILE}") "$SAVE_SEP_FOOT" ${curdir}; do
-    if [ "$dir" = "." ] || [ -z "$dir" ]; then
+  for dir in "$SAVE_SEP_HEAD" "${saved[@]}" "$SAVE_SEP_FOOT" "${curdir[@]}"; do
+    if [ -z "$dir" ]; then
       continue
     fi
     ((i=i+1))
-    dir=$(echo "${dir}" | sed 's/%20/ /g')
     options+=("$i" "$dir")
   done
 
