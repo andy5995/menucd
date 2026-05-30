@@ -29,6 +29,7 @@ VERSION="0.2.3"
 SAVE_FILE="${HOME}/.menucd-save"
 SAVE_SEP_HEAD="----- saved ----"
 SAVE_SEP_FOOT="----------------"
+SHOW_ALL="[ show all ]"
 
 echo "menucd $VERSION"
 echo "save-file location: ${HOME}/.menucd-save"
@@ -47,6 +48,7 @@ if [ ! -w "${SAVE_FILE}" ]; then
   touch "${SAVE_FILE}" || exit 1
 fi
 
+filter=""
 while :; do
   mapfile -t curdir < <(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | LC_ALL=C sort)
   mapfile -t saved < "${SAVE_FILE}"
@@ -58,29 +60,47 @@ while :; do
     options=("" "")
   fi
 
+  if [ -n "$filter" ]; then
+    ((i=i+1))
+    options+=("$i" "$SHOW_ALL")
+  fi
+
   for dir in "$SAVE_SEP_HEAD" "${saved[@]}" "$SAVE_SEP_FOOT" "${curdir[@]}"; do
     if [ -z "$dir" ]; then
+      continue
+    fi
+    if [ -n "$filter" ] \
+      && [ "$dir" != "$SAVE_SEP_HEAD" ] && [ "$dir" != "$SAVE_SEP_FOOT" ] \
+      && [[ "${dir,,}" != *"${filter,,}"* ]]; then
       continue
     fi
     ((i=i+1))
     options+=("$i" "$dir")
   done
 
+  title="PWD:\n$PWD"
+  if [ -n "$filter" ]; then
+    title="${title}\nfilter: $filter"
+  fi
+
   while :; do
     cmd=(dialog \
       --ok-label "CD" \
       --extra-button --extra-label "Save PWD" \
+      --help-button --help-label "Search" \
       --keep-tite \
       --cancel-label "Quit to PWD" \
-      --menu "PWD:\n$PWD" -1 -1 16)
+      --menu "$title" -1 -1 16)
     choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
     ret=$?
-    if [ -n "$choices" ]; then
+    selected=""
+    if [ "$ret" -eq 0 ] && [ -n "$choices" ]; then
       selected="${options[$choices*2+1]}"
+      if [ "$selected" = "$SAVE_SEP_HEAD" ] || [ "$selected" = "$SAVE_SEP_FOOT" ]; then
+        continue
+      fi
     fi
-    if [ "$selected" != "$SAVE_SEP_HEAD" ] && [ "$selected" != "$SAVE_SEP_FOOT" ]; then
-      break
-    fi
+    break
   done
 
   if  [ "$ret" -eq 255 ]; then
@@ -88,8 +108,14 @@ while :; do
   elif [ "$ret" -eq 1 ]; then
     echo "$PWD" > /tmp/menucd.cd.exit
     exit 0
+  elif [ "$ret" -eq 2 ]; then
+    filter=$(dialog --keep-tite \
+      --inputbox "Filter the current listing (empty clears it):" -1 -1 "$filter" \
+      2>&1 >/dev/tty)
   elif [ "$ret" -eq 3 ]; then
     echo "${PWD}" >> "${SAVE_FILE}"
+  elif [ "$selected" = "$SHOW_ALL" ]; then
+    filter=""
   else
     cd "$selected" || exit $?
   fi
