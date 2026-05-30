@@ -30,6 +30,7 @@ SAVE_FILE="${HOME}/.menucd-save"
 SAVE_SEP_HEAD="----- saved ----"
 SAVE_SEP_FOOT="----------------"
 SHOW_ALL="[ show all ]"
+MANAGE="[ manage bookmarks ]"
 
 echo "menucd $VERSION"
 echo "save-file location: ${HOME}/.menucd-save"
@@ -48,6 +49,46 @@ if [ ! -w "${SAVE_FILE}" ]; then
   touch "${SAVE_FILE}" || exit 1
 fi
 
+manage_bookmarks() {
+  local saved opts idx b choice ret
+  while :; do
+    mapfile -t saved < "${SAVE_FILE}"
+    opts=()
+    idx=0
+    for b in "${saved[@]}"; do
+      if [ -n "$b" ]; then
+        opts+=("$idx" "$b")
+      fi
+      ((idx=idx+1))
+    done
+    if [ "${#opts[@]}" -eq 0 ]; then
+      return
+    fi
+
+    choice=$(dialog --keep-tite \
+      --ok-label "Delete" \
+      --cancel-label "Back" \
+      --menu "Select a bookmark to delete:" -1 -1 16 \
+      "${opts[@]}" 2>&1 >/dev/tty)
+    ret=$?
+    if [ "$ret" -ne 0 ]; then
+      return
+    fi
+
+    if ! dialog --keep-tite \
+      --yesno "Delete this bookmark?\n\n${saved[$choice]}" -1 -1; then
+      continue
+    fi
+
+    unset 'saved[choice]'
+    if [ "${#saved[@]}" -eq 0 ]; then
+      : > "${SAVE_FILE}"
+    else
+      printf '%s\n' "${saved[@]}" > "${SAVE_FILE}"
+    fi
+  done
+}
+
 filter=""
 while :; do
   mapfile -t curdir < <(find . -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | LC_ALL=C sort)
@@ -63,6 +104,11 @@ while :; do
   if [ -n "$filter" ]; then
     ((i=i+1))
     options+=("$i" "$SHOW_ALL")
+  fi
+
+  if [ "${#saved[@]}" -gt 0 ]; then
+    ((i=i+1))
+    options+=("$i" "$MANAGE")
   fi
 
   for dir in "$SAVE_SEP_HEAD" "${saved[@]}" "$SAVE_SEP_FOOT" "${curdir[@]}"; do
@@ -116,6 +162,8 @@ while :; do
     echo "${PWD}" >> "${SAVE_FILE}"
   elif [ "$selected" = "$SHOW_ALL" ]; then
     filter=""
+  elif [ "$selected" = "$MANAGE" ]; then
+    manage_bookmarks
   else
     cd "$selected" || exit $?
   fi
