@@ -1,39 +1,76 @@
+[![Linux](https://github.com/andy5995/menucd/actions/workflows/linux.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/linux.yml)
+[![MacOS](https://github.com/andy5995/menucd/actions/workflows/macos.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/macos.yml)
+[![BSD](https://github.com/andy5995/menucd/actions/workflows/bsd.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/bsd.yml)
 [![run shellcheck](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml)
 
 # menucd
-Directory browser and changer for the command line
+Directory browser and changer for the command line.
+
+`menucd` shows a curses menu of the current directory's subdirectories plus your
+saved bookmarks. Move with the arrow keys, filter as you type, save the current
+directory as a bookmark — then pick one and your shell lands in it. It does only
+that: browse, bookmark, and `cd`. For copy/move/delete, use a file manager.
 
 ## Requirements
 
-* [dialog](https://invisible-island.net/dialog/dialog.html)
+* ncurses, including the menu library (`libmenuw` / `libmenu`)
 
-Linux, unix, BSD, MacOS
+To build: a C compiler and [meson](https://mesonbuild.com/).
 
-This script probably won't work from the Windows command line unless you're
-using WSL or some other modified command line environment.
+Runs on Linux, the BSDs, and macOS. It won't run from the native Windows console
+(no ncurses there) without WSL, MSYS2, or a similar environment.
+
+## Build and install
+
+```sh
+meson setup _build
+meson compile -C _build
+meson install -C _build   # optional — installs the menucd binary
+```
 
 ## Usage
 
-Add this function to your environment by editing your ~/.profile, ~/.bashrc,
-~/.zshrc, etc (change the path in the code below to match the path to where
-the `menucd.sh` script is located):
+`menucd` runs as a small wrapper shell function so it can change your
+*current* shell's directory. A child process can't do that on its own, so the
+binary hands the chosen directory back through a file that the function reads.
+
+After installing the `menucd` binary (e.g. `meson install`), add this function
+to your `~/.profile`, `~/.bashrc`, `~/.zshrc`, etc:
 
 ```sh
-function menucd () {
-  $HOME/scripts/menucd.sh $@
+menucd() {
+  cdfile="${XDG_RUNTIME_DIR:-/tmp}/menucd.cd.exit"
+  rm -f "$cdfile"
+  command menucd "$@"
   ret=$?
-  if [ -r /tmp/menucd.cd.exit ]; then
-          cd "`cat /tmp/menucd.cd.exit`"
-          rm /tmp/menucd.cd.exit
-  elif [ $ret != 0 ]; then
-          echo Fail
+  if [ -r "$cdfile" ]; then
+    cd "$(cat "$cdfile")" || return
+    rm -f "$cdfile"
   fi
+  return $ret
 }
 ```
 
-Reload `~/.profile` (or whichever rc file you edited):
+Reload your shell config:
 
     source ~/.profile
 
-Then run `menucd`. If you run the script (`menucd.sh`) by itself, it won't work.
+Then run `menucd`. Running the binary directly works, but it can't change your
+shell's directory without this wrapper.
+
+## Key bindings
+
+| Key | Action |
+| --- | --- |
+| Up / Down, PgUp / PgDn | move the selection |
+| Enter | `cd` into the highlighted directory or bookmark |
+| `s` | save the current directory as a bookmark |
+| `d` | delete the bookmark under the cursor (asks first) |
+| `/` | search — filter the list as you type (Enter accepts, ESC clears) |
+| `q` | quit, returning your shell to the selected directory |
+| `x` / ESC | cancel — quit without changing directory |
+| `?` | show this key-binding help inside the program |
+
+Bookmarks are stored in `$XDG_DATA_HOME/menucd/bookmarks` (default
+`~/.local/share/menucd/bookmarks`).
 

@@ -1,0 +1,39 @@
+name: MacOS
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ trunk ]
+    paths: &shared_paths
+      - '**'
+      - '!**.md'
+      - '!**.yml'
+      - '**/macos.yml'
+  pull_request:
+    branches: [ trunk ]
+    paths: *shared_paths
+
+jobs:
+  MacOS:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-15
+          - macos-14
+    runs-on: ${{ matrix.os }}
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+    steps:
+    - uses: actions/checkout@v6
+    - name: Install dependencies
+      run: brew install meson ncurses
+    - name: Meson setup
+      run: CFLAGS="-Werror" meson setup _build
+    - name: Build
+      run: meson compile -v -C _build
+    - name: Test
+      run: meson test --no-stdsplit -v -C _build

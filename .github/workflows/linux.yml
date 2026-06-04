@@ -1,0 +1,40 @@
+name: Linux
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ trunk ]
+    paths: &shared_paths
+      - '**'
+      - '!**.md'
+      - '!**.yml'
+      - '**/linux.yml'
+  pull_request:
+    branches: [ trunk ]
+    paths: *shared_paths
+
+jobs:
+  Linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [ gcc, clang ]
+    runs-on: ubuntu-latest
+    env:
+      CC: ${{ matrix.cc }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y meson ninja-build pkg-config libncurses-dev
+    - name: Meson setup
+      run: CFLAGS="-Werror" meson setup _build
+    - name: Build
+      run: meson compile -v -C _build
+    - name: Test
+      run: meson test --no-stdsplit -v -C _build
+    - name: Install test
+      run: meson install --destdir=install_test -C _build
