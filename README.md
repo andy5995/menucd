@@ -1,7 +1,6 @@
 [![Linux](https://github.com/andy5995/menucd/actions/workflows/linux.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/linux.yml)
 [![MacOS](https://github.com/andy5995/menucd/actions/workflows/macos.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/macos.yml)
 [![BSD](https://github.com/andy5995/menucd/actions/workflows/bsd.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/bsd.yml)
-[![run shellcheck](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/andy5995/menucd/actions/workflows/shellcheck.yml)
 
 # menucd
 Directory browser and changer for the command line.
