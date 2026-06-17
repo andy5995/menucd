@@ -1,7 +1,13 @@
-(in-progress)
+v0.3.0
 
-  * add a Search button to filter the current listing
-  * manage and delete saved bookmarks
+  * rewrite as a C/ncurses program; no longer needs dialog
+  + filter the listing as you type ('/' to search)
+  + delete saved bookmarks ('d')
+  + Backspace moves up to the parent directory
+  + give a starting directory as the first argument
+  + key-binding help inside the program ('?')
+  + colorized display
+  * store bookmarks in $XDG_DATA_HOME/menucd (migrated from ~/.menucd-save)
 
 v0.2.3 / 2023-07-25
 
