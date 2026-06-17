@@ -3,6 +3,7 @@
 #include "config.h"
 #include "core.h"
 
+#include <errno.h>
 #include <limits.h>
 #include <locale.h>
 #include <stdio.h>
@@ -108,6 +109,12 @@ int main(int argc, char **argv) {
   if (argc > 1 && strcmp(argv[1], "-v") == 0) {
     printf("menucd %s\n", VERSION);
     return 0;
+  }
+
+  // An optional first argument is the directory to start in.
+  if (argc > 1 && chdir(argv[1]) != 0) {
+    fprintf(stderr, "menucd: %s: %s\n", argv[1], strerror(errno));
+    return 1;
   }
 
   setlocale(LC_ALL, "");
@@ -302,6 +309,16 @@ int main(int argc, char **argv) {
           break;
         case KEY_PPAGE:
           menu_driver(menu, REQ_SCR_UPAGE);
+          break;
+        case KEY_BACKSPACE: // go up, like selecting ".."
+        case 127:
+        case 8:
+          if (have_parent) {
+            if (chdir("..") != 0)
+              beep();
+            else
+              rebuild = 1;
+          }
           break;
         case '/':
           search_mode = 1;

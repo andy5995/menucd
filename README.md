@@ -58,11 +58,15 @@ Reload your shell config:
 Then run `menucd`. Running the binary directly works, but it can't change your
 shell's directory without this wrapper.
 
+You can pass a starting directory as the first argument — `menucd ~/projects`
+opens the menu there instead of the current directory.
+
 ## Key bindings
 
 | Key | Action |
 | --- | --- |
 | Up / Down, PgUp / PgDn | move the selection |
+| Backspace | go up to the parent directory (same as selecting `..`) |
 | Enter | `cd` into the highlighted directory or bookmark |
 | `s` | save the current directory as a bookmark |
 | `d` | delete the bookmark under the cursor (asks first) |
