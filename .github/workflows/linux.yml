@@ -25,7 +25,7 @@ jobs:
     env:
       CC: ${{ matrix.cc }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Install dependencies
       run: |
         sudo apt-get update
